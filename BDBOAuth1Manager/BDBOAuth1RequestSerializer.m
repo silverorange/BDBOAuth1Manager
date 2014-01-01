@@ -134,6 +134,7 @@
 @interface BDBOAuth1RequestSerializer ()
 
 @property (nonatomic, copy) NSString *service;
+@property (nonatomic, copy) NSString *realm;
 @property (nonatomic, copy) NSString *consumerKey;
 @property (nonatomic, copy) NSString *consumerSecret;
 
@@ -152,16 +153,27 @@
     return [[BDBOAuth1RequestSerializer alloc] initWithService:service consumerKey:key consumerSecret:secret];
 }
 
-- (id)initWithService:(NSString *)service consumerKey:(NSString *)key consumerSecret:(NSString *)secret
++ (instancetype)serializerForServiceAndRealm:(NSString *)service withConsumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm
+{
+    return [[BDBOAuth1RequestSerializer alloc] initWithServiceAndRealm:service consumerKey:key consumerSecret:secret realm:realm];
+}
+
+- (id)initWithServiceAndRealm:(NSString *)service consumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm
 {
     self = [super init];
     if (self)
-    {
+        {
         _service = service;
+        _realm = realm;
         _consumerKey = key;
         _consumerSecret = secret;
-    }
+        }
     return self;
+}
+
+- (id)initWithService:(NSString *)service consumerKey:(NSString *)key consumerSecret:(NSString *)secret
+{
+    return [self initWithServiceAndRealm:service consumerKey:key consumerSecret:secret realm:nil];
 }
 
 #pragma mark Access Token
@@ -223,6 +235,9 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
 - (NSDictionary *)OAuthParameters
 {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    if (self.realm)
+        parameters[@"realm"] = self.realm;
+
     parameters[@"oauth_version"] = @"1.0";
     parameters[@"oauth_consumer_key"] = self.consumerKey;
     parameters[@"oauth_timestamp"] = [@(floor([[NSDate date] timeIntervalSince1970])) stringValue];
@@ -238,7 +253,11 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
 
 - (NSString *)OAuthSignatureForMethod:(NSString *)method URLString:(NSString *)URLString parameters:(NSDictionary *)parameters
 {
-    NSMutableURLRequest *request = [super requestWithMethod:@"GET" URLString:URLString parameters:parameters];
+    // don't include realm in signing parameters as per RFC 5849 Section 3.4.1.3.1
+    NSMutableDictionary *signatureParameters = [parameters mutableCopy];
+    [signatureParameters removeObjectForKey:@"realm"];
+
+    NSMutableURLRequest *request = [super requestWithMethod:@"GET" URLString:URLString parameters:signatureParameters];
     [request setHTTPMethod:method];
 
     NSString *secret = @"";
@@ -291,6 +310,9 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
     if (self.consumerKey && self.consumerSecret)
     {
         [mutableAuthorizationParameters addEntriesFromDictionary:[self OAuthParameters]];
+
+        // Realm gets explicitly added at start of sorted list below.
+        [mutableAuthorizationParameters removeObjectForKey:@"realm"];
         if (self.accessToken)
             mutableAuthorizationParameters[@"oauth_token"] = self.accessToken.token;
     }
@@ -303,7 +325,18 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
     [mutableParameters addEntriesFromDictionary:mutableAuthorizationParameters];
     mutableAuthorizationParameters[@"oauth_signature"] = [self OAuthSignatureForMethod:method URLString:URLString parameters:mutableParameters];
 
-    NSArray *sortedComponents = [[[mutableAuthorizationParameters queryStringRepresentation] componentsSeparatedByString:@"&"] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
+    // Put realm first if it exists. Not required by RFC 5849 but some providers expect it.
+    NSMutableDictionary *realmParameters = [[NSMutableDictionary alloc] init];
+    if ([parameters objectForKey:@"realm"])
+        [realmParameters setObject:[parameters objectForKey:@"realm"] forKey:@"realm"];
+
+    NSMutableArray *sortedComponents =[[[[realmParameters queryStringRepresentation] componentsSeparatedByString:@"&"] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)] mutableCopy];
+
+    // Other components get sorted. Not required by RFC but makes requests consistent.
+    NSArray *sortedComponentsWithoutRealm = [[[mutableAuthorizationParameters queryStringRepresentation] componentsSeparatedByString:@"&"] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
+
+    [sortedComponents addObjectsFromArray:sortedComponentsWithoutRealm];
+
     NSMutableArray *mutableComponents = [NSMutableArray array];
     for (NSString *component in sortedComponents)
     {
@@ -320,7 +353,7 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
 {
     NSMutableDictionary *mutableParameters = [parameters mutableCopy];
     for (NSString *key in parameters)
-        if ([key hasPrefix:@"oauth_"])
+        if ([key hasPrefix:@"oauth_"] || [key isEqualToString:@"realm"])
             [mutableParameters removeObjectForKey:key];
 
     NSMutableURLRequest *request = [super requestWithMethod:method URLString:URLString parameters:mutableParameters];
@@ -342,7 +375,7 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
 {
     NSMutableDictionary *mutableParameters = [parameters mutableCopy];
     for (NSString *key in parameters)
-        if ([key hasPrefix:@"oauth_"])
+        if ([key hasPrefix:@"oauth_"] || [key isEqualToString:@"realm"])
             [mutableParameters removeObjectForKey:key];
 
     NSMutableURLRequest *request = [super multipartFormRequestWithMethod:method URLString:URLString parameters:mutableParameters constructingBodyWithBlock:block];

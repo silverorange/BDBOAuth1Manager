@@ -35,7 +35,9 @@
 
 #pragma mark Initialization
 + (instancetype)serializerForService:(NSString *)service withConsumerKey:(NSString *)key consumerSecret:(NSString *)secret;
++ (instancetype)serializerForServiceAndRealm:(NSString *)service withConsumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm;
 - (id)initWithService:(NSString *)service consumerKey:(NSString *)key consumerSecret:(NSString *)secret;
+- (id)initWithServiceAndRealm:(NSString *)service consumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm;
 
 #pragma mark OAuth
 - (NSDictionary *)OAuthParameters;

@@ -17,6 +17,7 @@
 
 #pragma mark Initialization
 - (instancetype)initWithBaseURL:(NSURL *)url consumerKey:(NSString *)key consumerSecret:(NSString *)secret;
+- (instancetype)initWithBaseURLAndRealm:(NSURL *)url consumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm;
 
 #pragma mark Deauthorize
 - (BOOL)deauthorize;
