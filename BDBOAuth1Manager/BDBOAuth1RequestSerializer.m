@@ -257,7 +257,7 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
     NSMutableDictionary *signatureParameters = [parameters mutableCopy];
     [signatureParameters removeObjectForKey:@"realm"];
 
-    NSMutableURLRequest *request = [super requestWithMethod:@"GET" URLString:URLString parameters:signatureParameters];
+    NSMutableURLRequest *request = [super requestWithMethod:@"GET" URLString:URLString parameters:signatureParameters error:nil];
     [request setHTTPMethod:method];
 
     NSString *secret = @"";
@@ -349,14 +349,14 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
 }
 
 #pragma mark URL Requests
-- (NSMutableURLRequest *)requestWithMethod:(NSString *)method URLString:(NSString *)URLString parameters:(NSDictionary *)parameters
+- (NSMutableURLRequest *)requestWithMethod:(NSString *)method URLString:(NSString *)URLString parameters:(NSDictionary *)parameters error:(NSError *__autoreleasing *)error
 {
     NSMutableDictionary *mutableParameters = [parameters mutableCopy];
     for (NSString *key in parameters)
         if ([key hasPrefix:@"oauth_"] || [key isEqualToString:@"realm"])
             [mutableParameters removeObjectForKey:key];
 
-    NSMutableURLRequest *request = [super requestWithMethod:method URLString:URLString parameters:mutableParameters];
+    NSMutableURLRequest *request = [super requestWithMethod:method URLString:URLString parameters:mutableParameters error:error];
 
     // Only use parameters in the request entity body (with a content-type of `application/x-www-form-urlencoded`).
     // See RFC 5849, Section 3.4.1.3.1 http://tools.ietf.org/html/rfc5849#section-3.4
@@ -371,14 +371,14 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service)
     return request;
 }
 
-- (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method URLString:(NSString *)URLString parameters:(NSDictionary *)parameters constructingBodyWithBlock:(void (^)(id<AFMultipartFormData>))block
+- (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method URLString:(NSString *)URLString parameters:(NSDictionary *)parameters constructingBodyWithBlock:(void (^)(id<AFMultipartFormData>))block error:(NSError *__autoreleasing *)error
 {
     NSMutableDictionary *mutableParameters = [parameters mutableCopy];
     for (NSString *key in parameters)
         if ([key hasPrefix:@"oauth_"] || [key isEqualToString:@"realm"])
             [mutableParameters removeObjectForKey:key];
 
-    NSMutableURLRequest *request = [super multipartFormRequestWithMethod:method URLString:URLString parameters:mutableParameters constructingBodyWithBlock:block];
+    NSMutableURLRequest *request = [super multipartFormRequestWithMethod:method URLString:URLString parameters:mutableParameters constructingBodyWithBlock:block error:error];
 
     // Only use parameters in the request entity body (with a content-type of `application/x-www-form-urlencoded`).
     // See RFC 5849, Section 3.4.1.3.1 http://tools.ietf.org/html/rfc5849#section-3.4
