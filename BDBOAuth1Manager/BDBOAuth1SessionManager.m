@@ -31,7 +31,7 @@
     self = [super initWithBaseURL:url];
     if (self)
     {
-        self.requestSerializer  = [BDBOAuth1RequestSerializer serializerForServiceAndRealm:url.host withConsumerKey:key consumerSecret:secret realm:realm];
+        self.requestSerializer = [BDBOAuth1RequestSerializer serializerForServiceAndRealm:url.host withConsumerKey:key consumerSecret:secret realm:realm];
     }
     return self;
 }
