@@ -56,8 +56,8 @@
 
 - (instancetype)initWithBaseURLAndRealm:(NSURL *)baseURL
                             consumerKey:(NSString *)consumerKey
-                            consumerSecret:(NSString *)consumerSecret
-                                     realm:(NSString *)realm;
+                         consumerSecret:(NSString *)consumerSecret
+                                  realm:(NSString *)realm;
 
 /**
  *  ---------------------------------------------------------------------------------------
@@ -122,7 +122,7 @@
                           method:(NSString *)method
                         username:(NSString *)username
                         password:(NSString *)password
-                         success:(void (^)(BDBOAuthToken *accessToken))success
+                         success:(void (^)(BDBOAuth1Credential *accessToken))success
                          failure:(void (^)(NSError *error))failure;
 
 @end
