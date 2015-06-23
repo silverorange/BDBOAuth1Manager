@@ -199,6 +199,16 @@ NSString * const BDBOAuth1SignatureNonceParameter       = @"oauth_nonce";
                                   consumerSecret:consumerSecret];
 }
 
++ (instancetype)serializerForServiceAndRealm:(NSString *)service
+                             withConsumerKey:(NSString *)consumerKey
+                              consumerSecret:(NSString *)consumerSecret
+                                       realm:(NSString *)realm {
+    return [[[self class] alloc] initWithServiceAndRealm:service
+                                             consumerKey:consumerKey
+                                          consumerSecret:consumerSecret
+                                                   realm:realm];
+}
+
 - (instancetype)initWithService:(NSString *)service
                     consumerKey:(NSString *)consumerKey
                  consumerSecret:(NSString *)consumerSecret {
@@ -216,19 +226,19 @@ NSString * const BDBOAuth1SignatureNonceParameter       = @"oauth_nonce";
     return self;
 }
 
-+ (instancetype)serializerForServiceAndRealm:(NSString *)service withConsumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm
-{
-    return [[BDBOAuth1RequestSerializer alloc] initWithServiceAndRealm:service consumerKey:key consumerSecret:secret realm:realm];
-}
-
-- (id)initWithServiceAndRealm:(NSString *)service consumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm
-{
+- (instancetype)initWithServiceAndRealm:(NSString *)service
+                            consumerKey:(NSString *)consumerKey
+                         consumerSecret:(NSString *)consumerSecret
+                                  realm:(NSString *)realm {
     self = [super init];
+
     if (self) {
         _service = service;
+        _consumerKey = consumerKey;
+        _consumerSecret = consumerSecret;
         _realm = realm;
-        _consumerKey = key;
-        _consumerSecret = secret;
+
+        _accessToken = [self readAccessTokenFromKeychain];
     }
 
     return self;
