@@ -40,25 +40,14 @@
     self = [super initWithBaseURL:baseURL];
 
     if (self) {
-        self.requestSerializer  = [BDBOAuth1RequestSerializer serializerForServiceAndRealm:baseURL.host
-                                                                           withConsumerKey:consumerKey
-                                                                            consumerSecret:consumerSecret
-                                                                                     realm:nil];
+        self.requestSerializer  = [BDBOAuth1RequestSerializer serializerForService:baseURL.host
+                                                                   withConsumerKey:consumerKey
+                                                                    consumerSecret:consumerSecret];
     }
 
     return self;
 }
 
-- (instancetype)initWithBaseURLAndRealm:(NSURL *)url consumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm
-{
-    self = [super initWithBaseURL:url];
-    if (self)
-    {
-        self.requestSerializer = [BDBOAuth1RequestSerializer serializerForServiceAndRealm:url.host withConsumerKey:key consumerSecret:secret realm:realm];
-    }
-
-    return self;
-}
 
 #pragma mark Authorization Status
 - (BOOL)isAuthorized {
