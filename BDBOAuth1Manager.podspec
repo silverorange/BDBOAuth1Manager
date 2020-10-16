@@ -5,10 +5,8 @@ Pod::Spec.new do |s|
   s.summary   = 'AFNetworking 2.0-compatible replacement for AFOAuth1Client.'
   s.homepage  = 'https://github.com/bdbergeron/BDBOAuth1Manager'
   s.social_media_url = 'https://twitter.com/bradbergeron'
-  s.authors   = { 'Bradley David Bergeron' => 'brad@bradbergeron.com',
-                  'Michael Gauthier'       => 'mike@silverorange.com',
-                  'Keith Burgoyne'         => 'keith@silverorange.com' }
-  s.source    = { :git => 'https://github.com/silverorange/BDBOAuth1Manager.git', :tag => s.version.to_s }
+  s.authors   = { 'Bradley David Bergeron' => 'brad@bradbergeron.com' }
+  s.source    = { :git => 'https://github.com/bdbergeron/BDBOAuth1Manager.git', :tag => s.version.to_s }
   s.requires_arc = true
 
   s.ios.deployment_target = '7.0'
@@ -16,5 +14,5 @@ Pod::Spec.new do |s|
 
   s.source_files = 'BDBOAuth1Manager/**/*.{h,m}'
 
-  s.dependency 'AFNetworking/NSURLSession', '~> 3.0.0'
+  s.dependency 'AFNetworking/NSURLSession', '~> 4.0.0'
 end

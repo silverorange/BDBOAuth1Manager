@@ -113,7 +113,10 @@
         success(requestToken);
     };
 
-    NSURLSessionDataTask *task = [self dataTaskWithRequest:request completionHandler:completionBlock];
+    NSURLSessionDataTask *task = [self dataTaskWithRequest:request
+                                            uploadProgress:nil
+                                          downloadProgress:nil
+                                         completionHandler:completionBlock];
     [task resume];
 }
 
@@ -165,7 +168,10 @@
         success(accessToken);
     };
 
-    NSURLSessionDataTask *task = [self dataTaskWithRequest:request completionHandler:completionBlock];
+    NSURLSessionDataTask *task = [self dataTaskWithRequest:request
+                                            uploadProgress:nil
+                                          downloadProgress:nil
+                                         completionHandler:completionBlock];
     [task resume];
 }
 
@@ -187,7 +193,10 @@
     NSString *URLString = [[NSURL URLWithString:accessPath relativeToURL:self.baseURL] absoluteString];
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:method URLString:URLString parameters:parameters error:nil];
 
-    NSURLSessionDataTask *task = [self dataTaskWithRequest:request completionHandler:^(NSURLResponse * __unused response, id responseObject, NSError *error) {
+    NSURLSessionDataTask *task = [self dataTaskWithRequest:request
+                                            uploadProgress:nil
+                                          downloadProgress:nil
+                                         completionHandler:^(NSURLResponse * __unused response, id responseObject, NSError *error) {
         self.responseSerializer = defaultSerializer;
         self.requestSerializer.requestToken = nil;
         if (!error) {
