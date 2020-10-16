@@ -306,6 +306,7 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service) {
                             URLString:(NSString *)URLString
                            parameters:(NSDictionary *)parameters
                                 error:(NSError *__autoreleasing *)error {
+    NSMutableURLRequest *request = [super requestWithMethod:@"GET" URLString:URLString parameters:parameters error:error];
     [request setHTTPMethod:method];
 
     NSString *secret = @"";
