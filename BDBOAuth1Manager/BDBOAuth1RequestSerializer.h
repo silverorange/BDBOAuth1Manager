@@ -151,10 +151,6 @@ FOUNDATION_EXPORT NSString * const BDBOAuth1OAuthCallbackParameter;
                      withConsumerKey:(NSString *)consumerKey
                       consumerSecret:(NSString *)consumerSecret;
 
-+ (instancetype)serializerForServiceAndRealm:(NSString *)service
-                             withConsumerKey:(NSString *)consumerKey
-                              consumerSecret:(NSString *)consumerSecret
-                                       realm:(NSString *)realm;
 /**
  *  Instantiate a new BDBOAuth1RequestSerializer instance for the given service with its consumerKey and consumerSecret.
  *
@@ -168,10 +164,6 @@ FOUNDATION_EXPORT NSString * const BDBOAuth1OAuthCallbackParameter;
                     consumerKey:(NSString *)consumerKey
                  consumerSecret:(NSString *)consumerSecret;
 
-- (instancetype)initWithServiceAndRealm:(NSString *)service
-                            consumerKey:(NSString *)consumerKey
-                         consumerSecret:(NSString *)consumerSecret
-                                  realm:(NSString *)realm;
 /**
  *  ---------------------------------------------------------------------------------------
  * @name Storing the Access Token

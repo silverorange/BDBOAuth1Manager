@@ -171,7 +171,6 @@ NSString * const BDBOAuth1SignatureNonceParameter       = @"oauth_nonce";
 @interface BDBOAuth1RequestSerializer ()
 
 @property (nonatomic, copy) NSString *service;
-@property (nonatomic, copy) NSString *realm;
 @property (nonatomic, copy) NSString *consumerKey;
 @property (nonatomic, copy) NSString *consumerSecret;
 
@@ -199,16 +198,6 @@ NSString * const BDBOAuth1SignatureNonceParameter       = @"oauth_nonce";
                                   consumerSecret:consumerSecret];
 }
 
-+ (instancetype)serializerForServiceAndRealm:(NSString *)service
-                             withConsumerKey:(NSString *)consumerKey
-                              consumerSecret:(NSString *)consumerSecret
-                                       realm:(NSString *)realm {
-    return [[[self class] alloc] initWithServiceAndRealm:service
-                                             consumerKey:consumerKey
-                                          consumerSecret:consumerSecret
-                                                   realm:realm];
-}
-
 - (instancetype)initWithService:(NSString *)service
                     consumerKey:(NSString *)consumerKey
                  consumerSecret:(NSString *)consumerSecret {
@@ -218,25 +207,6 @@ NSString * const BDBOAuth1SignatureNonceParameter       = @"oauth_nonce";
         _service = service;
         _consumerKey = consumerKey;
         _consumerSecret = consumerSecret;
-        _realm = nil;
-
-        _accessToken = [self readAccessTokenFromKeychain];
-    }
-
-    return self;
-}
-
-- (instancetype)initWithServiceAndRealm:(NSString *)service
-                            consumerKey:(NSString *)consumerKey
-                         consumerSecret:(NSString *)consumerSecret
-                                  realm:(NSString *)realm {
-    self = [super init];
-
-    if (self) {
-        _service = service;
-        _consumerKey = consumerKey;
-        _consumerSecret = consumerSecret;
-        _realm = realm;
 
         _accessToken = [self readAccessTokenFromKeychain];
     }
@@ -319,10 +289,6 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service) {
     parameters[BDBOAuth1SignatureTimestampParameter]   = [@(floor([[NSDate date] timeIntervalSince1970])) stringValue];
     parameters[BDBOAuth1SignatureMethodParameter]      = @"HMAC-SHA1";
 
-    if (self.realm) {
-        parameters[@"realm"] = self.realm;
-    }
-
     CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
     CFUUIDBytes uuidBytes = CFUUIDGetUUIDBytes(uuid);
     CFRelease(uuid);
@@ -340,11 +306,7 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service) {
                             URLString:(NSString *)URLString
                            parameters:(NSDictionary *)parameters
                                 error:(NSError *__autoreleasing *)error {
-    // don't include realm in signing parameters as per RFC 5849 Section 3.4.1.3.1
-    NSMutableDictionary *signatureParameters = [parameters mutableCopy];
-    [signatureParameters removeObjectForKey:@"realm"];
-
-    NSMutableURLRequest *request = [super requestWithMethod:@"GET" URLString:URLString parameters:signatureParameters error:error];
+    NSMutableURLRequest *request = [super requestWithMethod:@"GET" URLString:URLString parameters:parameters error:error];
     [request setHTTPMethod:method];
 
     NSString *secret = @"";
@@ -409,8 +371,6 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service) {
     if (self.consumerKey && self.consumerSecret) {
         [mutableAuthorizationParameters addEntriesFromDictionary:[self OAuthParameters]];
 
-        // Realm gets explicitly added at start of sorted list below.
-        [mutableAuthorizationParameters removeObjectForKey:@"realm"];
         NSString *token = self.accessToken.token;
 
         if (token) {
@@ -430,17 +390,7 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service) {
                                                                                           parameters:mutableParameters
                                                                                                error:error];
 
-    // Put realm first if it exists. Not required by RFC 5849 but some providers expect it.
-    NSMutableDictionary *realmParameters = [[NSMutableDictionary alloc] init];
-    if ([parameters objectForKey:@"realm"]) {
-        [realmParameters setObject:[parameters objectForKey:@"realm"] forKey:@"realm"];
-    }
-    NSMutableArray *sortedComponents = [[[[realmParameters bdb_queryStringRepresentation] componentsSeparatedByString:@"&"] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)] mutableCopy];
-
-    // Other components get sorted. Not required by RFC but makes requests consistent.
-    NSArray *sortedComponentsWithoutRealm = [[[mutableAuthorizationParameters bdb_queryStringRepresentation] componentsSeparatedByString:@"&"] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
-
-    [sortedComponents addObjectsFromArray:sortedComponentsWithoutRealm];
+    NSArray *sortedComponents = [[[mutableAuthorizationParameters bdb_queryStringRepresentation] componentsSeparatedByString:@"&"] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
 
     NSMutableArray *mutableComponents = [NSMutableArray array];
 
@@ -463,7 +413,7 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service) {
     NSMutableDictionary *mutableParameters = [parameters mutableCopy];
 
     for (NSString *key in parameters) {
-        if ([key hasPrefix:@"oauth_"] || [key isEqualToString:@"realm"]) {
+        if ([key hasPrefix:@"oauth_"]) {
             [mutableParameters removeObjectForKey:key];
         }
     }
@@ -500,7 +450,7 @@ static NSDictionary *OAuthKeychainDictionaryForService(NSString *service) {
     NSMutableDictionary *mutableParameters = [parameters mutableCopy];
 
     for (NSString *key in parameters) {
-        if ([key hasPrefix:@"oauth_"] || [key isEqualToString:@"realm"]) {
+        if ([key hasPrefix:@"oauth_"]) {
             [mutableParameters removeObjectForKey:key];
         }
     }

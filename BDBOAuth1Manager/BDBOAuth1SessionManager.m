@@ -20,10 +20,7 @@
 //  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "AFURLConnectionOperation.h"
 #import "BDBOAuth1SessionManager.h"
-
-#if (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000) || (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1090)
 
 #pragma mark -
 @interface BDBOAuth1SessionManager ()
@@ -43,25 +40,14 @@
     self = [super initWithBaseURL:baseURL];
 
     if (self) {
-        self.requestSerializer  = [BDBOAuth1RequestSerializer serializerForServiceAndRealm:baseURL.host
-                                                                           withConsumerKey:consumerKey
-                                                                            consumerSecret:consumerSecret
-                                                                                     realm:nil];
+        self.requestSerializer  = [BDBOAuth1RequestSerializer serializerForService:baseURL.host
+                                                                   withConsumerKey:consumerKey
+                                                                    consumerSecret:consumerSecret];
     }
 
     return self;
 }
 
-- (instancetype)initWithBaseURLAndRealm:(NSURL *)url consumerKey:(NSString *)key consumerSecret:(NSString *)secret realm:(NSString *)realm
-{
-    self = [super initWithBaseURL:url];
-    if (self)
-    {
-        self.requestSerializer = [BDBOAuth1RequestSerializer serializerForServiceAndRealm:url.host withConsumerKey:key consumerSecret:secret realm:realm];
-    }
-
-    return self;
-}
 
 #pragma mark Authorization Status
 - (BOOL)isAuthorized {
@@ -116,7 +102,10 @@
         success(requestToken);
     };
 
-    NSURLSessionDataTask *task = [self dataTaskWithRequest:request completionHandler:completionBlock];
+    NSURLSessionDataTask *task = [self dataTaskWithRequest:request
+                                            uploadProgress:nil
+                                          downloadProgress:nil
+                                         completionHandler:completionBlock];
     [task resume];
 }
 
@@ -168,7 +157,10 @@
         success(accessToken);
     };
 
-    NSURLSessionDataTask *task = [self dataTaskWithRequest:request completionHandler:completionBlock];
+    NSURLSessionDataTask *task = [self dataTaskWithRequest:request
+                                            uploadProgress:nil
+                                          downloadProgress:nil
+                                         completionHandler:completionBlock];
     [task resume];
 }
 
@@ -190,7 +182,10 @@
     NSString *URLString = [[NSURL URLWithString:accessPath relativeToURL:self.baseURL] absoluteString];
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:method URLString:URLString parameters:parameters error:nil];
 
-    NSURLSessionDataTask *task = [self dataTaskWithRequest:request completionHandler:^(NSURLResponse * __unused response, id responseObject, NSError *error) {
+    NSURLSessionDataTask *task = [self dataTaskWithRequest:request
+                                            uploadProgress:nil
+                                          downloadProgress:nil
+                                         completionHandler:^(NSURLResponse * __unused response, id responseObject, NSError *error) {
         self.responseSerializer = defaultSerializer;
         self.requestSerializer.requestToken = nil;
         if (!error) {
@@ -210,5 +205,3 @@
 }
 
 @end
-
-#endif
