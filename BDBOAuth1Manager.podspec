@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
   s.authors   = { 'Bradley David Bergeron' => 'brad@bradbergeron.com',
                   'Michael Gauthier'       => 'mike@silverorange.com',
                   'Keith Burgoyne'         => 'keith@silverorange.com' }
-  s.source    = { :git => 'https://github.com/bdbergeron/BDBOAuth1Manager.git', :tag => s.version.to_s }
+  s.source    = { :git => 'https://github.com/silverorange/BDBOAuth1Manager.git', :tag => s.version.to_s }
   s.requires_arc = true
 
   s.ios.deployment_target = '9.0'
